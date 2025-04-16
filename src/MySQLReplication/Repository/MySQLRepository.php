@@ -70,8 +70,17 @@ readonly class MySQLRepository implements RepositoryInterface, PingableConnectio
 
     public function getMasterStatus(): MasterStatusDTO
     {
+        $binLogSql = 'SHOW MASTER STATUS';
+
+        if (str_starts_with($this->getVersion(), '8.4')) {
+            $binLogSql = 'SHOW BINARY LOG STATUS';
+        }
+
         $data = $this->getConnection()
-            ->fetchAssociative('SHOW BINARY LOG STATUS');
+            ->fetchAssociative($binLogSql);
+
+        var_dump($data);
+
         if (empty($data)) {
             throw new BinLogException(
                 MySQLReplicationException::BINLOG_NOT_ENABLED,
